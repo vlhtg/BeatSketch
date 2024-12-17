@@ -1,25 +1,18 @@
 import numpy as np
+import pyaudio
+import threading
 
 class Block:
-    def __init__ (self, bid, present, x, y, angle, enabled=False):
+    def __init__ (self, bid, present, x, y, angle, audioObj):
         self.bid = bid
         self.present = present
         self.x = x
         self.y = y
         self.angle = angle
-        self.enabled = enabled
+        self.audioObj = audioObj
 
     def getID(self):
         return self.bid
-    
-    def enable(self):
-        self.enabled = True
-
-    def disable(self):
-        self.enabled = False
-
-    def getEnabled(self):
-        return self.enabled
     
     def setLocation(self, x, y, angle):
         self.x = x
@@ -33,7 +26,11 @@ class Block:
         return self.present
 
     def getRect(self):
-        return (self.x, self.y, 100, 100)
+        power = 1024*(2**(self.angle*4/360))/16
+        return (self.x, self.y, power, 15)
+    
+    def getY(self):
+        return self.y
     
     def getColor(self):
         if (self.bid < 10):
@@ -43,19 +40,19 @@ class Block:
         if (self.bid >= 20):
             return (0, 0, 255)
     
-    def __slider_to_frequency(self, slider_position, f_min=20, f_max=20000, slider_range=600):
+    def __slider_to_frequency(self, slider_position, f_min=523, f_max=523*2, slider_range=570):
+        slider_position = slider_range - slider_position
         octaves = np.log2(f_max / f_min)
         r = slider_range / octaves
         return f_min * (2 ** (slider_position / r))
     
-    def getDuration(self, bpm, fps):
-        return self.x
     
-    def getWave(self):
+    def getWave(self, bps):
         
         sample_rate = 44100
         amplitude = 0.5
-        duration = self.getDuration
+        power = (2**(self.angle*4/360))/16
+        duration = power/bps
         frequency = self.__slider_to_frequency(self.y)
 
         # generate sine wave
@@ -73,13 +70,16 @@ class Block:
 
         return wave
 
-        def play(self):
-            #play sound using pyaudio in separate thread
-            stream = audio.open(format=pyaudio.paFloat32,
-                                channels=1,
-                                rate=44100,
-                                output=True)
-            stream.write(self.getWave().astype(np.float32).tobytes())
+    def play(self, bps):
+
+        def play_wave():
+            stream = self.audioObj.open(format=pyaudio.paFloat32,
+                                        channels=1,
+                                        rate=44100,
+                                        output=True)
+            stream.write(self.getWave(bps).astype(np.float32).tobytes())
             stream.stop_stream()
             stream.close()
-            self.disable()
+
+        play_thread = threading.Thread(target=play_wave)
+        play_thread.start()

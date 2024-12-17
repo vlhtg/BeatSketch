@@ -1,0 +1,6 @@
+- [x] make sound non-blocking
+- [ ] correct sound length
+- [ ] correct pitch
+- [ ] make window the correct size, placement, etc
+- [ ] add keyboard support
+- [ ] make app full-screen, on the correct screen
