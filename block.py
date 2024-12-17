@@ -35,11 +35,11 @@ class Block:
     
     def getColor(self):
         if (self.bid < 10):
-            return (255, 92, 0)
+            return (254, 92, 0)
         if (self.bid >= 10 and self.bid < 20):
             return (36, 36, 200)
         if (self.bid >= 20):
-            return (50, 205, 50)
+            return (50, 206, 50)
         
     def getShadowColor(self):
         return (self.getColor()[0]/2, self.getColor()[1]/2, self.getColor()[2]/2)

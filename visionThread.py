@@ -7,6 +7,7 @@ import threading
 class VisionThread:
 
     blocks = []
+    debugWindow = True
 
     def cvinit(self):
         capture = cv2.VideoCapture(1)
@@ -31,12 +32,13 @@ class VisionThread:
         if not ret:
             print("error capturing frame")
 
-        showframe = cv2.resize(frame, (int(1400), int(850)))
-        showframe = cv2.rotate(showframe, cv2.ROTATE_180)
-        # show caputred frame
-        cv2.imshow('frame', showframe)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            self.finish()
+        if self.debugWindow:
+            showframe = cv2.resize(frame, (int(1400), int(850)))
+            showframe = cv2.rotate(showframe, cv2.ROTATE_180)
+            # show caputred frame
+            cv2.imshow('frame', showframe)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                self.finish()
 
         grayscale = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         # quarter resolution

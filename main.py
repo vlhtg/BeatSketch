@@ -11,58 +11,71 @@ class Main:
 
     def main():
 
-        pygame.init()
-        clock = pygame.time.Clock()
+        # constants
         fps = 80
         bpm = 120
         sweep = 0
+
+        # flags and variables
         mute = False
         hold = False
-
-        audio = pyaudio.PyAudio()
-
-        vt = VisionThread(audio)
-
-        canvas = pygame.display.set_mode((1024, 570))
-
-        pygame.display.set_caption("BeatSketch") 
+        adjusting = False
         exit = False
-        
+
         playedIds = []
         audioBlocks = []
 
+        # init various objects
+        pygame.init()
+        clock = pygame.time.Clock()
+        audio = pyaudio.PyAudio()
+        vt = VisionThread(audio)
+        canvas = pygame.display.set_mode((1024, 570))
+        pygame.display.set_caption("BeatSketch") 
+        
+        # gameplay loop
         try:
             while not exit:
+
+                # exit handling
                 for event in pygame.event.get(): 
                     if event.type == pygame.QUIT: 
                         vt.finish()
                         exit = True
 
+                # move sweep line and reset played blocks
                 sweep += 1024/((60/bpm)*fps)
                 if sweep >= 1024:
                     sweep = 0
                     playedIds = []
                             
                 # draw sweep line
-                if not mute:
+                if not mute and not adjusting:
                     pygame.draw.rect(canvas, (255, 255, 255), (sweep, 0, 2, 600))
 
+                # get blocks
                 blocks = vt.getBlocks()
                 #print("screenUpdate")
                 # draw blocks
                 if blocks is None:
                     #print("No blocks")
                     pass
+
+                # if we are holding, then audioBlocks do not change
                 if not hold:
                     audioBlocks = blocks.copy()
+
+                # play music blocks and draw shadow blocks
                 for block in audioBlocks:
                     if block.getPresent():
                         if hold:
                             pygame.draw.rect(canvas, block.getShadowColor(), block.getRect())
-                        if sweep >= int(block.getX()) and block.getID() not in playedIds and not mute:
+                        if sweep >= int(block.getX()) and block.getID() not in playedIds and not mute and not adjusting:
                             bps = bpm/60
                             block.play(bps)
                             playedIds.append(block.getID())
+
+                # draw music blocks
                 for block in blocks:
                     if block.getPresent():
                         print(f"Block ID: {block.getID()}")
@@ -82,37 +95,32 @@ class Main:
                 # draw quarter lines
                 for i in range(1, 4):
                     pygame.draw.line(canvas, (50, 50, 50), (i*256, 0), (i*256, 570), 2)
-                
-                # events = pygame.event.get()
-                # for event in events:
-                #     if event.type == pygame.KEYDOWN:
-                #         if event.key == pygame.K_d:
-                #             if bpm > 50:
-                #                 bpm -= 1
-                #         if event.key == pygame.K_c:
-                #             if bpm < 200:
-                #                 bpm += 1
 
+                # key events
                 hold = False
+                adjusting = False
                 keys=pygame.key.get_pressed()
-                if keys[pygame.K_d]:
+                if keys[pygame.K_d]: # decrease bpm
                     if bpm > 50:
                         bpm -= 1
-                        sleep(0.3)
-                if keys[pygame.K_c]:
+                        adjusting = True
+                        sleep(0.15)
+                if keys[pygame.K_c]: # increase bpm
                     if bpm < 200:
                         bpm += 1
-                        sleep(0.3)
-                if keys[pygame.K_a]:
+                        adjusting = True
+                        sleep(0.15)
+                if keys[pygame.K_a]: # mute
                     mute = not mute
-                    sleep(0.3)
-                if keys[pygame.K_b]:
+                    sleep(0.2)
+                if keys[pygame.K_b]: # hold
                     hold = True
-                if keys[pygame.K_ESCAPE]:
+                if keys[pygame.K_ESCAPE]: # exit
                     vt.exit = True
                     sleep(0.2)
                     exit = True
-                                
+
+                #make sure we are running at the correct fps   
                 clock.tick(fps)
 
         except KeyboardInterrupt:
