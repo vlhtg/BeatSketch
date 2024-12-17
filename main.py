@@ -17,6 +17,7 @@ class Main:
         bpm = 120
         sweep = 0
         mute = False
+        hold = False
 
         audio = pyaudio.PyAudio()
 
@@ -28,14 +29,16 @@ class Main:
         exit = False
         
         playedIds = []
+        audioBlocks = []
 
         try:
             while not exit:
                 for event in pygame.event.get(): 
                     if event.type == pygame.QUIT: 
+                        vt.finish()
                         exit = True
 
-                sweep += 1024/((60/bpm)*fps);
+                sweep += 1024/((60/bpm)*fps)
                 if sweep >= 1024:
                     sweep = 0
                     playedIds = []
@@ -45,19 +48,25 @@ class Main:
                     pygame.draw.rect(canvas, (255, 255, 255), (sweep, 0, 2, 600))
 
                 blocks = vt.getBlocks()
-                print("screenUpdate")
+                #print("screenUpdate")
                 # draw blocks
                 if blocks is None:
-                    print("No blocks")
-                for block in blocks:
+                    #print("No blocks")
+                    pass
+                if not hold:
+                    audioBlocks = blocks.copy()
+                for block in audioBlocks:
                     if block.getPresent():
-                        print(f"Block ID: {block.getID()}")
-                        pygame.draw.rect(canvas, block.getColor(), block.getRect())
-                        # play sound using pyaudio
+                        if hold:
+                            pygame.draw.rect(canvas, block.getShadowColor(), block.getRect())
                         if sweep >= int(block.getX()) and block.getID() not in playedIds and not mute:
                             bps = bpm/60
                             block.play(bps)
                             playedIds.append(block.getID())
+                for block in blocks:
+                    if block.getPresent():
+                        print(f"Block ID: {block.getID()}")
+                        pygame.draw.rect(canvas, block.getColor(), block.getRect())
                         
                 # draw bpm text
                 font = pygame.font.SysFont(None, 24)
@@ -84,6 +93,7 @@ class Main:
                 #             if bpm < 200:
                 #                 bpm += 1
 
+                hold = False
                 keys=pygame.key.get_pressed()
                 if keys[pygame.K_d]:
                     if bpm > 50:
@@ -96,6 +106,8 @@ class Main:
                 if keys[pygame.K_a]:
                     mute = not mute
                     sleep(0.3)
+                if keys[pygame.K_b]:
+                    hold = True
                 if keys[pygame.K_ESCAPE]:
                     vt.exit = True
                     sleep(0.2)

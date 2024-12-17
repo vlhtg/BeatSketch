@@ -10,7 +10,7 @@ class VisionThread:
 
     def cvinit(self):
         capture = cv2.VideoCapture(1)
-        # set resolution to 720p
+        # set resolution to 1080p
         capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
         capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
         width = capture.get(cv2.CAP_PROP_FRAME_WIDTH )
@@ -23,12 +23,21 @@ class VisionThread:
         return capture, detector
     
     def finish(self):
+        cv2.destroyAllWindows()
         self.exit = True
 
     def loop(self, capture, detector):
         ret, frame = capture.read()
         if not ret:
             print("error capturing frame")
+
+        showframe = cv2.resize(frame, (int(1400), int(850)))
+        showframe = cv2.rotate(showframe, cv2.ROTATE_180)
+        # show caputred frame
+        cv2.imshow('frame', showframe)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            self.finish()
+
         grayscale = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         # quarter resolution
         grayscale = cv2.resize(grayscale, (int(960), int(540)))

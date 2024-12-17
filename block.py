@@ -35,11 +35,14 @@ class Block:
     
     def getColor(self):
         if (self.bid < 10):
-            return (255, 0, 0)
+            return (255, 92, 0)
         if (self.bid >= 10 and self.bid < 20):
-            return (0, 255, 0)
+            return (36, 36, 200)
         if (self.bid >= 20):
-            return (0, 0, 255)
+            return (50, 205, 50)
+        
+    def getShadowColor(self):
+        return (self.getColor()[0]/2, self.getColor()[1]/2, self.getColor()[2]/2)
     
     def __slider_to_frequency(self, slider_position, f_min=523, f_max=523*2, slider_range=570):
         slider_position = slider_range - slider_position
