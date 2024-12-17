@@ -8,6 +8,7 @@ class Block:
         self.present = present
         self.x = x
         self.y = y
+        
         self.angle = angle
         self.audioObj = audioObj
 
@@ -29,8 +30,8 @@ class Block:
         power = 1024*(2**(self.angle*4/360))/16
         return (self.x, self.y, power, 15)
     
-    def getY(self):
-        return self.y
+    def getX(self):
+        return self.x
     
     def getColor(self):
         if (self.bid < 10):
@@ -52,6 +53,8 @@ class Block:
         sample_rate = 44100
         amplitude = 0.5
         power = (2**(self.angle*4/360))/16
+        maxPower = (1024-self.x)/float(1024)
+        power = min(power, maxPower)
         duration = power/bps
         frequency = self.__slider_to_frequency(self.y)
 

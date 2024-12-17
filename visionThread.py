@@ -21,6 +21,9 @@ class VisionThread:
         parameters = cv2.aruco.DetectorParameters()
         detector = cv2.aruco.ArucoDetector(aruco_dict, parameters)
         return capture, detector
+    
+    def finish(self):
+        self.exit = True
 
     def loop(self, capture, detector):
         ret, frame = capture.read()
@@ -81,7 +84,7 @@ class VisionThread:
 
     def action(self):
         capture, detector = self.cvinit()
-        while True:
+        while not self.exit:
             self.loop(capture, detector)
 
     def getBlocks(self):
@@ -90,6 +93,7 @@ class VisionThread:
     def __init__(self, audio):
         # create a new thread
         self.audio = audio
+        self.exit = False
         self.thread = threading.Thread(target=self.action)
         # start the thread
         self.thread.start()
