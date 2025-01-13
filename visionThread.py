@@ -7,10 +7,11 @@ import threading
 class VisionThread:
 
     blocks = []
-    debugWindow = True
+    # show the camera stream
+    debugWindow = False
 
     def cvinit(self):
-        capture = cv2.VideoCapture(1)
+        capture = cv2.VideoCapture(0)
         # set resolution to 1080p
         capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
         capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
@@ -68,7 +69,7 @@ class VisionThread:
                 cY = int((topLeft[1] + bottomRight[1])/2)
                 print(f"Real Location: X={cX}, Y={cY}")
 
-                cX = h.map_range(cX, 55, 948, 1, 1023)
+                cX = h.map_range(cX, 55, 936, 1, 1023)
                 cY = h.map_range(cY, 60, 525, 1, 569)
 
                 vector = np.array(topRight) - np.array(topLeft)
